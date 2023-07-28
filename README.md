@@ -27,7 +27,7 @@ Before running the ShortLinker application, make sure you have the following ins
 
 ```
 git clone <repository_url>
-cd ShortLinker
+cd shortlinker-app
 ```
 
 2. Install the required dependencies:
