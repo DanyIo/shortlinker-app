@@ -1,71 +1,91 @@
-<!--
-title: 'AWS NodeJS Example'
-description: 'This template demonstrates how to deploy a NodeJS function running on AWS Lambda using the traditional Serverless Framework.'
-layout: Doc
-framework: v3
-platform: AWS
-language: nodeJS
-priority: 1
-authorLink: 'https://github.com/serverless'
-authorName: 'Serverless, inc.'
-authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
--->
+# ShortLinker
 
-# Serverless Framework AWS NodeJS Example
+ShortLinker is a serverless web application that allows users to create short links for long URLs. It is built using the Serverless Framework, AWS Lambda, Amazon DynamoDB, Amazon API Gateway, Amazon SQS, and Amazon SES. The application provides a simple and efficient way to generate short links for sharing and tracking purposes.
 
-This template demonstrates how to deploy a NodeJS function running on AWS Lambda using the traditional Serverless Framework. The deployed function does not include any event definitions as well as any kind of persistence (database). For more advanced configurations check out the [examples repo](https://github.com/serverless/examples/) which includes integrations with SQS, DynamoDB or examples of functions that are triggered in `cron`-like manner. For details about configuration of specific `events`, please refer to our [documentation](https://www.serverless.com/framework/docs/providers/aws/events/).
+## Features
 
-## Usage
+- User registration and login: Users can register and log in to the ShortLinker application using their email and password.
+- Create short links: Authenticated users can create short links for long URLs, making it easier to share them.
+- Redirect short links: ShortLinker automatically redirects users to the original long URL when they access the generated short link.
+- List user links: Authenticated users can view a list of their created short links along with their corresponding long URLs.
+- Delete short links: Users have the option to delete their short links when they are no longer needed.
+- Expiration time for short links: Users can set an expiration time for their short links. After the specified time, the short link will no longer be accessible.
+- Email notifications: ShortLinker sends email notifications to users when their short links expire.
 
-### Deployment
+## Getting Started
 
-In order to deploy the example, you need to run the following command:
+### Prerequisites
 
-```
-$ serverless deploy
-```
+Before running the ShortLinker application, make sure you have the following installed:
 
-After running deploy, you should see output similar to:
+- Node.js and npm
+- AWS CLI with appropriate credentials set up
 
-```bash
-Deploying aws-node-project to stage dev (us-east-1)
+### Installation
 
-✔ Service deployed to stack aws-node-project-dev (112s)
-
-functions:
-  hello: aws-node-project-dev-hello (1.5 kB)
-```
-
-### Invocation
-
-After successful deployment, you can invoke the deployed function by using the following command:
-
-```bash
-serverless invoke --function hello
-```
-
-Which should result in response similar to the following:
-
-```json
-{
-  "statusCode": 200,
-  "body": "{\n  \"message\": \"Go Serverless v3.0! Your function executed successfully!\",\n  \"input\": {}\n}"
-}
-```
-
-### Local development
-
-You can invoke your function locally by using the following command:
-
-```bash
-serverless invoke local --function hello
-```
-
-Which should result in response similar to the following:
+1. Clone the ShortLinker repository:
 
 ```
-{
-    "statusCode": 200,
-    "body": "{\n  \"message\": \"Go Serverless v3.0! Your function executed successfully!\",\n  \"input\": \"\"\n}"
-}
+git clone <repository_url>
+cd ShortLinker
 ```
+
+2. Install the required dependencies:
+
+```
+npm install
+```
+
+3. Configure Environment Variables:
+
+   - Create a `.env` file in the root directory of the project.
+   - Add the following environment variables and set their values accordingly:
+
+     ```
+     VERIFIED_EMAIL=<your_verified_email>
+     DYNAMODB_CUSTOMER_TABLE=<your_dynamodb_customer_table>
+     DYNAMODB_LINKS_TABLE=<your_dynamodb_links_table>
+     THE_QUEUE_URL=<your_sqs_queue_url>
+     JWT_SECRET=<your_jwt_secret>
+     ```
+
+4. Deploy the application:
+
+```
+serverless deploy
+```
+
+### Usage
+
+Once the application is deployed, you can access the ShortLinker API endpoints using the provided base URL. The following API endpoints are available:
+
+- POST /register: Register a new user with the application.
+- POST /login: Log in to the application with registered credentials.
+- POST /: Create a short link for a long URL (requires authentication).
+- GET /links: Get a list of user-created short links (requires authentication).
+- GET /{id}: Redirect to the original long URL associated with the short link.
+- DELETE /{id}: Delete a user-created short link (requires authentication).
+
+### Expiration Time
+
+When creating a short link, you can specify an expiration time for the link. The available options are "one-time," "1 day," "3 days," and "7 days." If "one-time" is chosen, the short link will be valid only for a single access. For other options, the short link will expire after the specified number of days.
+
+### Email Notifications
+
+ShortLinker sends email notifications to users when their short links expire. The notification is sent using Amazon SES, so make sure you have your email address verified in SES to receive email notifications.
+
+## Architecture
+
+The ShortLinker application is built using a serverless architecture on AWS. It leverages various AWS services, including AWS Lambda, Amazon DynamoDB, Amazon API Gateway, Amazon SQS, and Amazon SES.
+
+### AWS Services Used
+
+- AWS Lambda: Handles the business logic of the application, including user registration, login, short link creation, and redirection.
+- Amazon DynamoDB: Stores user data and short link information.
+- Amazon API Gateway: Provides RESTful API endpoints to interact with the application.
+- Amazon SQS: Used for asynchronous processing of expired short links and sending email notifications.
+- Amazon SES: Sends email notifications to users when their short links expire.
+
+## Acknowledgments
+
+Thank you for using ShortLinker! If you have any questions or need assistance, please don't hesitate to reach out to us. Happy linking!
