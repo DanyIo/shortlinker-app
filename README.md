@@ -68,7 +68,7 @@ Once the application is deployed, you can access the ShortLinker API endpoints u
 
 ### Expiration Time
 
-When creating a short link, you can specify an expiration time for the link. The available options are "one-time," "1 day," "3 days," and "7 days." If "one-time" is chosen, the short link will be valid only for a single access. For other options, the short link will expire after the specified number of days.
+When creating a short link, you can specify an expiration time for the link. The available options are "one-time," "1 day," "3 days," and "7 days." If "one-time" is chosen, the short link will be valid only for a single access.
 
 ### Email Notifications
 
