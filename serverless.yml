@@ -1,0 +1,123 @@
+service: shortlink
+frameworkVersion: "3"
+useDotenv: true
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  environment:
+    DYNAMODB_CUSTOMER_TABLE: ${self:service}-customerTable-${sls:stage}
+    DYNAMODB_LINKS_TABLE: ${self:service}-linksTable-${sls:stage}
+    THE_QUEUE_URL: { Ref: TheQueue }
+    JWT_SECRET: ${env:JWT_SECRET}
+    VERIFIED_EMAIL: ${env:VERIFIED_EMAIL}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:PutItem"
+        - "dynamodb:Get*"
+        - "dynamodb:Scan*"
+        - "dynamodb:UpdateItem"
+        - "dynamodb:DeleteItem"
+      Resource:
+        - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
+        - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-linksTable-${sls:stage}
+
+functions:
+  verifyToken:
+    handler: src/utils/jwtToken.verifyToken
+  registerUser:
+    handler: src/auth/registerUser.register
+    events:
+      - http:
+          path: /register
+          method: post
+  loginUser:
+    handler: src/auth/loginUser.login
+    events:
+      - http:
+          path: /login
+          method: post
+  createShortLink:
+    handler: src/link/createShortLink.createShortLink
+    events:
+      - http:
+          path: /
+          method: post
+          authorizer:
+            name: verifyToken
+  redirectShortLink:
+    handler: src/link/redirectShortLink.redirectShortLink
+    events:
+      - http:
+          path: /{id}
+          method: get
+  listUserLinks:
+    handler: src/link/listUserLinks.listUserLinks
+    events:
+      - http:
+          path: /links
+          method: get
+          cors: true
+          authorizer:
+            name: verifyToken
+  deleteExpiredShortLinks:
+    handler: src/link/deleteExpiredShortLinks.deleteExpiredShortLinks
+    events:
+      - eventBridge:
+          schedule: rate(1 day)
+  deleteLinkByID:
+    handler: src/link/deleteLinkByID.deleteLinkByID
+    events:
+      - http:
+          path: /{id}
+          method: delete
+          cors: true
+          authorizer: verifyToken
+  sendEmailNotifications:
+    handler: src/link/sendEmailNotifications.sendEmailNotifications
+    events:
+      - sqs:
+          batchSize: 10
+          arn:
+            Fn::GetAtt:
+              - TheQueue
+              - Arn
+
+resources:
+  Resources:
+    TheQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: TheQueue
+    DeleteLinkGroup:
+      Type: AWS::Scheduler::ScheduleGroup
+      Properties:
+        Name: deleteLink
+    CustomerTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: primary_key
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: primary_key
+            KeyType: HASH
+        TableName: ${self:service}-customerTable-${sls:stage}
+
+    LinksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        TableName: ${self:service}-linksTable-${sls:stage}
