@@ -2,10 +2,9 @@ service: shortlink
 frameworkVersion: "3"
 useDotenv: true
 plugins:
-  - serverless-plugin-typescript
   - serverless-offline
   - serverless-dotenv-plugin
-
+  - serverless-plugin-typescript
 provider:
   name: aws
   runtime: nodejs18.x
@@ -23,9 +22,15 @@ provider:
         - "dynamodb:Scan*"
         - "dynamodb:UpdateItem"
         - "dynamodb:DeleteItem"
+        - "sqs:SendMessage"
+        - "sqs:ReceiveMessage"
+        - "ses:SendEmail"
+        - "ses:SendRawEmail"
       Resource:
         - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
         - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-linksTable-${sls:stage}
+        - arn:aws:sqs:${aws:region}:641832978610:TheQueue
+        - arn:aws:ses:${aws:region}:${aws:accountId}:*
 
 functions:
   verifyToken:
@@ -69,7 +74,7 @@ functions:
     handler: src/link/deleteExpiredShortLinks.deleteExpiredShortLinks
     events:
       - eventBridge:
-          schedule: rate(1 day)
+          schedule: rate(1 minute)
   deleteLinkByID:
     handler: src/link/deleteLinkByID.deleteLinkByID
     events:
