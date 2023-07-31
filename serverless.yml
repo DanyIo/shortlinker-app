@@ -74,7 +74,7 @@ functions:
     handler: src/link/deleteExpiredShortLinks.deleteExpiredShortLinks
     events:
       - eventBridge:
-          schedule: rate(1 minute)
+          schedule: rate(1 day)
   deleteLinkByID:
     handler: src/link/deleteLinkByID.deleteLinkByID
     events:
