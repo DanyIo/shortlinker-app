@@ -43,9 +43,6 @@ npm install
 
      ```
      VERIFIED_EMAIL=<your_verified_email>
-     DYNAMODB_CUSTOMER_TABLE=<your_dynamodb_customer_table>
-     DYNAMODB_LINKS_TABLE=<your_dynamodb_links_table>
-     THE_QUEUE_URL=<your_sqs_queue_url>
      JWT_SECRET=<your_jwt_secret>
      ```
 
