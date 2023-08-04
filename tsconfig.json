@@ -1,12 +1,20 @@
 {
   "compilerOptions": {
-    "preserveConstEnums": true,
-    "strictNullChecks": true,
+    "types": ["node"],
+    "module": "Node16",
+    "removeComments": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2022",
     "sourceMap": true,
-    "target": "es5",
-    "outDir": ".build",
+    "esModuleInterop": true,
     "moduleResolution": "node",
-    "lib": ["es2015"],
-    "rootDir": "./"
-  }
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*"]
+    }
+  },
+  "include": ["src/**/*", "verifyEmailIdentity.mjs"]
 }

@@ -4,14 +4,16 @@ frameworkVersion: "3"
 useDotenv: true
 
 custom:
-  esbuild:
-    bundle: true
-    minify: false
+  scriptable:
+    hooks:
+     after:deploy:finalize: node verifyEmailIdentity.mjs
+
 
 plugins:
   - serverless-offline
   - serverless-dotenv-plugin
   - serverless-esbuild
+  - serverless-scriptable-plugin
 
 provider:
   name: aws
@@ -22,6 +24,7 @@ provider:
     THE_QUEUE_URL: { Ref: TheQueue }
     JWT_SECRET: ${env:JWT_SECRET}
     VERIFIED_EMAIL: ${env:VERIFIED_EMAIL}
+    REGION: ${aws:region}
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -30,10 +33,10 @@ provider:
         - "dynamodb:Scan*"
         - "dynamodb:UpdateItem"
         - "dynamodb:DeleteItem"
-        - "sqs:SendMessage"
-        - "sqs:ReceiveMessage"
-        - "ses:SendEmail"
-        - "ses:SendRawEmail"
+        - "dynamodb:BatchWriteItem"
+        - "scheduler:*"
+        - "sqs:*"
+        - "ses:*"
       Resource:
         - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
         - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-linksTable-${sls:stage}
