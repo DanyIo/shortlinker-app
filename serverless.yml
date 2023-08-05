@@ -4,16 +4,23 @@ frameworkVersion: "3"
 useDotenv: true
 
 custom:
+  esbuild:
+    bundle: true
+    minify: false
   scriptable:
     hooks:
-     after:deploy:finalize: node verifyEmailIdentity.mjs
-
+      after:deploy:finalize: node verifyEmailIdentity.mjs
+  autoswagger:
+    apiKeyHeaders:
+      - Authorization
+    basePath: /${sls:stage}
 
 plugins:
   - serverless-offline
   - serverless-dotenv-plugin
   - serverless-esbuild
   - serverless-scriptable-plugin
+  - serverless-auto-swagger
 
 provider:
   name: aws
@@ -52,12 +59,44 @@ functions:
       - http:
           path: /register
           method: post
+          bodyType: User
+          responseData:
+            201:
+              description: "New user registered"
+              bodyType: Token
+            400:
+              description: "Invalid body params"
+              bodyType: ErrorStr
+            409:
+              description: "User already exists"
+              bodyType: ErrorStr
+            500:
+              description: "Server error"
+              bodyType: ErrorStr
+
   loginUser:
     handler: src/auth/loginUser.login
     events:
       - http:
           path: /login
           method: post
+          bodyType: User
+          responseData:
+            200:
+              description: "Login successful"
+              bodyType: Token
+            400:
+              description: "Invalid body params"
+              bodyType: ErrorStr
+            401:
+              description: "Invalid password"
+              bodyType: ErrorStr
+            404:
+              description: "User not found"
+              bodyType: ErrorStr
+            500:
+              description: "Internal server error"
+              bodyType: ErrorStr
   createShortLink:
     handler: src/link/createShortLink.createShortLink
     events:
@@ -66,12 +105,35 @@ functions:
           method: post
           authorizer:
             name: verifyToken
+          bodyType: ICreateShortLink
+          responseData:
+            200:
+              description: "Short link created successfully"
+              bodyType: Link
+            400:
+              description: "Invalid request body"
+              bodyType: ErrorStr
+            500:
+              description: "An error occurred while creating the short link"
+              bodyType: ErrorStr
   redirectShortLink:
     handler: src/link/redirectShortLink.redirectShortLink
     events:
       - http:
           path: /{id}
           method: get
+          responseData:
+            302:
+              description: "Redirecting to the original link"
+            400:
+              description: "Short link ID is missing in the request."
+              bodyType: ErrorStr
+            404:
+              description: "Short link not found."
+              bodyType: ErrorStr
+            500:
+              description: "An error occurred while redirecting the short link."
+              bodyType: ErrorStr
   listUserLinks:
     handler: src/link/listUserLinks.listUserLinks
     events:
@@ -81,6 +143,14 @@ functions:
           cors: true
           authorizer:
             name: verifyToken
+          responseData:
+            200:
+              description: "List of user links"
+              bodyType: UserLinkArray
+            500:
+              description: "An error occurred while listing links."
+              bodyType: ErrorStr
+
   deleteExpiredShortLinks:
     handler: src/link/deleteExpiredShortLinks.deleteExpiredShortLinks
     events:
@@ -94,6 +164,21 @@ functions:
           method: delete
           cors: true
           authorizer: verifyToken
+          responseData:
+            200:
+              description: "Short link deleted successfully"
+            400:
+              description: "Short ID is required"
+              bodyType: ErrorStr
+            403:
+              description: "Forbidden: You are not the owner of this link"
+              bodyType: ErrorStr
+            404:
+              description: "Link not found"
+              bodyType: ErrorStr
+            500:
+              description: "An error occurred while deleting the short link"
+              bodyType: ErrorStr
   sendEmailNotifications:
     handler: src/link/sendEmailNotifications.sendEmailNotifications
     events:

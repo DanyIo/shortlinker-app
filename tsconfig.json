@@ -16,5 +16,5 @@
       "*": ["node_modules/*"]
     }
   },
-  "include": ["src/**/*", "verifyEmailIdentity.mjs"]
+  "include": ["src/**/*", "verifyEmailIdentity.mjs", "typings/**/*.d.ts"]
 }

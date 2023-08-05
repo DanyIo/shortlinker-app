@@ -21,7 +21,9 @@ export const listUserLinks: APIGatewayProxyHandler = async (
 
     return {
       statusCode: 200,
-      body: JSON.stringify(links),
+      body: JSON.stringify({
+        links,
+      }),
     };
   } catch (error) {
     console.error("Error listing links:", error);

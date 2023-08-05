@@ -1,12 +1,8 @@
 import { APIGatewayProxyHandler, APIGatewayEvent } from "aws-lambda";
 import { dynamoDb } from "../utils/dynamoDb";
+import { ICreateShortLink } from "../types/api-types";
 
 const SHORT_LINK_LENGTH = 6;
-
-interface ICreateShortLink {
-  originalLink: string;
-  expirationTime: "one-time" | "1 day" | "3 days" | "7 days";
-}
 
 export const createShortLink: APIGatewayProxyHandler = async (
   event: APIGatewayEvent

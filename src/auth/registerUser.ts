@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { dynamoDb } from "../utils/dynamoDb";
 import getUserByEmail from "../utils/getUserByEmail";
-import { User } from "../types/types";
+import { User } from "../types/api-types";
 import { generateJwtToken } from "../utils/jwtToken";
 import { hash } from "bcryptjs";
 
@@ -64,7 +64,6 @@ export const register: APIGatewayProxyHandler = async (event) => {
     return {
       statusCode: 201,
       body: JSON.stringify({
-        message: "Registration successful",
         token: jwtToken,
       }),
     };

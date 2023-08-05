@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { generateJwtToken } from "../utils/jwtToken";
 import getUserByEmail from "../utils/getUserByEmail";
-import { User } from "../types/types";
+import { User } from "../types/api-types";
 import { compare } from "bcryptjs";
 
 export const login: APIGatewayProxyHandler = async (event) => {

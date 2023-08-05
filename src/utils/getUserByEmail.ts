@@ -1,4 +1,4 @@
-import { User } from "../types/types";
+import { User } from "../types/api-types.ts";
 import { dynamoDb } from "./dynamoDb";
 
 async function getUserByEmail(email: string): Promise<User | null> {
