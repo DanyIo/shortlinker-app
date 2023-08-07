@@ -7,7 +7,7 @@ import {
 import { CreateScheduleCommand } from "@aws-sdk/client-scheduler";
 
 const SHORT_LINK_LENGTH = 6;
-const deploymentURL = process.env.DEPLOYMENT_URL
+const deploymentURL = process.env.DEPLOYMENT_URL;
 
 export const createShortLink = async (event: APIGatewayEvent) => {
   try {
@@ -22,7 +22,14 @@ export const createShortLink = async (event: APIGatewayEvent) => {
         }),
       };
     }
-
+    if (!isValidUrl(originalLink)) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: "Invalid originalLink URL format.",
+        }),
+      };
+    }
     const shortId = generateShortId(SHORT_LINK_LENGTH);
     const formattedExpirationTime = formatExpirationTime(expirationTime);
 
@@ -125,4 +132,8 @@ function formatExpirationTime(expirationTime) {
   }
 
   throw new Error("Invalid expiration time format.");
+}
+function isValidUrl(url) {
+  const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+  return urlRegex.test(url);
 }
