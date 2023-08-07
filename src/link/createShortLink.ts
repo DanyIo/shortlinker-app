@@ -7,6 +7,7 @@ import {
 import { CreateScheduleCommand } from "@aws-sdk/client-scheduler";
 
 const SHORT_LINK_LENGTH = 6;
+const deploymentURL = process.env.DEPLOYMENT_URL
 
 export const createShortLink = async (event: APIGatewayEvent) => {
   try {
@@ -66,16 +67,10 @@ export const createShortLink = async (event: APIGatewayEvent) => {
         };
       }
     }
-    const shortURL = generateShortUrl(
-      event.headers,
-      event.requestContext,
-      shortId
-    );
-
     return {
       statusCode: 200,
       body: JSON.stringify({
-        link: shortURL,
+        link: `${deploymentURL}${shortId}`,
       }),
     };
   } catch (error) {
@@ -109,13 +104,6 @@ function generateShortId(length) {
 
   return shortId;
 }
-
-const generateShortUrl = (headers, requestContext, shortId) => {
-  const proto = "https://";
-  const host = headers?.Host ?? "";
-  const path = requestContext?.path ?? "/";
-  return `${proto}${host}${path}${shortId}`;
-};
 
 function formatExpirationTime(expirationTime) {
   const durationMap = {

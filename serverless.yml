@@ -36,6 +36,7 @@ provider:
     VERIFIED_EMAIL: ${env:VERIFIED_EMAIL}
     REGION: ${aws:region}
     ACCOUNT_ID: ${aws:accountId}
+    DEPLOYMENT_URL: !Sub 'https://${ApiGatewayRestApi}.execute-api.${aws:region}.amazonaws.com/${sls:stage}/'
 
 functions:
   verifyToken:
