@@ -63,6 +63,14 @@ Once the application is deployed, you can access the ShortLinker API endpoints u
 - GET /{id}: Redirect to the original long URL associated with the short link.
 - DELETE /{id}: Delete a user-created short link (requires authentication).
 
+### API Testing
+
+To test the ShortLinker API, you can use Swagger. The Swagger documentation provides a user-friendly interface to interact with the API endpoints.
+
+**Swagger API Documentation:** [Open Swagger Documentation](https://pv8kbe2wta.execute-api.us-east-1.amazonaws.com/swagger)
+
+Please note that you might need to adjust the URL based on your API's actual endpoint and region.
+ 
 ### Expiration Time
 
 When creating a short link, you can specify an expiration time for the link. The available options are "one-time," "1 day," "3 days," and "7 days." If "one-time" is chosen, the short link will be valid only for a single access.
