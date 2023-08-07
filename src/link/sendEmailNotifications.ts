@@ -13,7 +13,7 @@ export const sendEmailNotifications = async (
 
       const params: SES.SendEmailRequest = {
         Destination: {
-          ToAddresses: [item.ownerEmail],
+          ToAddresses: [item.email],
         },
         Message: {
           Body: {

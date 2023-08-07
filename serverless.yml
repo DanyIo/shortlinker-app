@@ -7,6 +7,7 @@ custom:
   esbuild:
     bundle: true
     minify: false
+    exclude: []
   scriptable:
     hooks:
       after:deploy:finalize: node verifyEmailIdentity.mjs
@@ -25,6 +26,8 @@ plugins:
 provider:
   name: aws
   runtime: nodejs18.x
+  iam:
+    role: MainRole
   environment:
     DYNAMODB_CUSTOMER_TABLE: ${self:service}-customerTable-${sls:stage}
     DYNAMODB_LINKS_TABLE: ${self:service}-linksTable-${sls:stage}
@@ -32,23 +35,7 @@ provider:
     JWT_SECRET: ${env:JWT_SECRET}
     VERIFIED_EMAIL: ${env:VERIFIED_EMAIL}
     REGION: ${aws:region}
-  iamRoleStatements:
-    - Effect: "Allow"
-      Action:
-        - "dynamodb:PutItem"
-        - "dynamodb:Get*"
-        - "dynamodb:Scan*"
-        - "dynamodb:UpdateItem"
-        - "dynamodb:DeleteItem"
-        - "dynamodb:BatchWriteItem"
-        - "scheduler:*"
-        - "sqs:*"
-        - "ses:*"
-      Resource:
-        - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
-        - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-linksTable-${sls:stage}
-        - arn:aws:sqs:${aws:region}:641832978610:TheQueue
-        - arn:aws:ses:${aws:region}:${aws:accountId}:*
+    ACCOUNT_ID: ${aws:accountId}
 
 functions:
   verifyToken:
@@ -150,12 +137,8 @@ functions:
             500:
               description: "An error occurred while listing links."
               bodyType: ErrorStr
-
   deleteExpiredShortLinks:
     handler: src/link/deleteExpiredShortLinks.deleteExpiredShortLinks
-    events:
-      - eventBridge:
-          schedule: rate(1 day)
   deleteLinkByID:
     handler: src/link/deleteLinkByID.deleteLinkByID
     events:
@@ -191,6 +174,53 @@ functions:
 
 resources:
   Resources:
+    MainRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: MainRole
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+                  - events.amazonaws.com
+                  - scheduler.amazonaws.com
+              Action: sts:AssumeRole
+              Condition:
+                StringEquals:
+                  aws:SourceAccount: ${aws:accountId}
+        Policies:
+          - PolicyName: mainPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - dynamodb:PutItem
+                    - dynamodb:Get*
+                    - dynamodb:Scan*
+                    - dynamodb:UpdateItem
+                    - dynamodb:DeleteItem
+                    - dynamodb:BatchWriteItem
+                    - sqs:*
+                    - ses:*
+                    - scheduler:*
+                    - logs:*
+                    - iam:PassRole
+                    - lambda:InvokeFunction
+                  Resource:
+                    - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
+                    - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-linksTable-${sls:stage}
+                    - arn:aws:sqs:${aws:region}:641832978610:TheQueue
+                    - arn:aws:ses:${aws:region}:${aws:accountId}:*
+                    - arn:aws:scheduler:${aws:region}:${aws:accountId}:*
+                    - arn:aws:iam::${aws:accountId}:role/MainRole
+                    - arn:aws:lambda:${aws:region}:${aws:accountId}:function:shortlink-dev-deleteExpiredShortLinks:*
+                    - arn:aws:lambda:${aws:region}:${aws:accountId}:function:shortlink-dev-deleteExpiredShortLinks
+                    - arn:aws:logs:${aws:region}:${aws:accountId}:*
+
     TheQueue:
       Type: AWS::SQS::Queue
       Properties:
@@ -210,14 +240,13 @@ resources:
           - AttributeName: primary_key
             KeyType: HASH
         TableName: ${self:service}-customerTable-${sls:stage}
-
     LinksTable:
       Type: AWS::DynamoDB::Table
       Properties:
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
-        BillingMode: PAY_PER_REQUEST
         KeySchema:
           - AttributeName: id
             KeyType: HASH

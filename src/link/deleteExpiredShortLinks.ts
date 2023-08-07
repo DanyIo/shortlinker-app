@@ -1,71 +1,69 @@
-import { SQS } from "aws-sdk";
-import { APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayProxyHandler, APIGatewayEvent } from "aws-lambda";
+import { DeleteScheduleCommand } from "@aws-sdk/client-scheduler";
 import { dynamoDb } from "../utils/dynamoDb";
+import { schedulerClient } from "../utils/eventBridgeClient";
+import { sqsClient } from "../utils/notifications";
 
-const sqs = new SQS();
 const queueUrl = process.env.THE_QUEUE_URL;
 
-export const deleteExpiredShortLinks =
-  async (): Promise<APIGatewayProxyResult> => {
+interface IDeleteExpiredShortLink {
+  id: string;
+  email: string;
+}
+
+export const deleteExpiredShortLinks: APIGatewayProxyHandler = async (
+  data: IDeleteExpiredShortLink
+) => {
+  try {
+    const { id, email } = data;
+
+    const deleteParams = {
+      TableName: process.env.DYNAMODB_LINKS_TABLE,
+      Key: {
+        id,
+      },
+    };
+
+    const sqsParams = {
+      MessageBody: JSON.stringify({
+        id,
+        email,
+      }),
+      QueueUrl: `${queueUrl}`,
+    };
     try {
-      const params = {
-        TableName: process.env.DYNAMODB_LINKS_TABLE,
-        FilterExpression: "expirationTime <= :currentTime",
-        ExpressionAttributeValues: {
-          ":currentTime": new Date().toISOString(),
-        },
-      };
+      await dynamoDb.delete(deleteParams);
+      await sqsClient.sendMessage(sqsParams).promise();
 
-      const result = await dynamoDb.scan(params);
-
-      if (result.Items && result.Items.length > 0) {
-        const deletePromises: Promise<any>[] = [];
-        const deleteDbPromises: Promise<any>[] = [];
-
-        for (const item of result.Items) {
-          if (item.expirationTime === "one-time") {
-            continue;
-          }
-
-          const sqsParams: SQS.Types.SendMessageRequest = {
-            MessageBody: JSON.stringify({
-              id: item.id,
-              ownerEmail: item.ownerEmail,
-            }),
-            QueueUrl: `${queueUrl}`,
-          };
-
-          const deleteParams = {
-            TableName: process.env.DYNAMODB_LINKS_TABLE,
-            Key: {
-              id: item.id,
-            },
-          };
-
-          deletePromises.push(sqs.sendMessage(sqsParams).promise());
-          deleteDbPromises.push(dynamoDb.delete(deleteParams));
-        }
-
-        await Promise.all(deletePromises);
-
-        await Promise.all(deleteDbPromises);
-      }
-
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          message:
-            "Expired short links have been marked for deletion and notifications sent.",
-        }),
-      };
+      await schedulerClient.send(
+        new DeleteScheduleCommand({
+          Name: `expired_link_id-${id}`,
+          GroupName: "deleteLink",
+        })
+      );
     } catch (error) {
-      console.error("Error marking expired short links for deletion:", error);
+      console.error("Error deleting item from DynamoDB:", error);
       return {
         statusCode: 500,
         body: JSON.stringify({
-          message:
-            "An error occurred while marking expired short links for deletion and sending notifications.",
+          message: "An error occurred while deleting the short link.",
         }),
       };
     }
-  };
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: "Short link deleted successfully.",
+      }),
+    };
+  } catch (error) {
+    console.error("Error parsing request or deleting short link:", error);
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        message: "Invalid request body.",
+      }),
+    };
+  }
+};

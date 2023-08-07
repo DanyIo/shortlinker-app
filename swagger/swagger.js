@@ -331,7 +331,7 @@ module.exports = {
           type: "string",
         },
         expirationTime: {
-          enum: ["one-time", "1 day", "3 days", "7 days"],
+          enum: ["one-time", "1 day", "3 days", "7 days", "5 minutes"],
           title: "ICreateShortLink.expirationTime",
           type: "string",
         },
