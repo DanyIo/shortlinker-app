@@ -77,7 +77,7 @@ When creating a short link, you can specify an expiration time for the link. The
 
 ### Email Notifications
 
-ShortLinker sends email notifications to users when their short links expire. The notification is sent using Amazon SES, so make sure you have your email address verified in SES to receive email notifications.
+ShortLinker sends email notifications to users when their short links expire. The notification is sent using Amazon SES, you just need to confirm verification email that will be sent automatically.
 
 ## Architecture
 
