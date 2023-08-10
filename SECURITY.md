@@ -26,7 +26,7 @@ We maintain security updates for the latest major version of Shortlinker. If you
 
 ## Vulnerability Reporting Contacts
 
-- Email: [security@example.com](mailto:danylobodnar96@gmail.com)
+- Email: [danylobodnar96@gmail.com](mailto:danylobodnar96@gmail.com)
 
 ## Attribution
 
