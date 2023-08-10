@@ -33,7 +33,7 @@ provider:
     THE_QUEUE_URL: { Ref: TheQueue }
     JWT_SECRET: ${env:JWT_SECRET}
     STAGE: ${sls:stage}
-    VERIFIED_EMAIL: ${env:VERIFIED_EMAIL}
+    EMAIL_TO_SEND_FROM: ${env:EMAIL_TO_SEND_FROM}
     REGION: ${aws:region}
     ACCOUNT_ID: ${aws:accountId}
     DEPLOYMENT_URL: !Sub 'https://${ApiGatewayRestApi}.execute-api.${aws:region}.amazonaws.com/${sls:stage}/'

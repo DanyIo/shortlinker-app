@@ -42,7 +42,7 @@ npm install
    - Add the following environment variables and set their values accordingly:
 
      ```
-     VERIFIED_EMAIL=<your_verified_email>
+     EMAIL_TO_SEND_FROM=<your_EMAIL_TO_SEND_FROM>
      JWT_SECRET=<your_jwt_secret>
      ```
 

@@ -1,7 +1,7 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { sesClient } from "../utils/sesClient";
 
-const verifiedEmail = process.env.VERIFIED_EMAIL;
+const verifiedEmail = process.env.EMAIL_TO_SEND_FROM;
 
 export const sendEmailNotifications = async (
   event
