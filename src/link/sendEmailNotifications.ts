@@ -1,7 +1,6 @@
-import { SES } from "aws-sdk";
 import { APIGatewayProxyResult } from "aws-lambda";
+import { sesClient } from "../utils/sesClient";
 
-const ses = new SES();
 const verifiedEmail = process.env.VERIFIED_EMAIL;
 
 export const sendEmailNotifications = async (
@@ -11,7 +10,7 @@ export const sendEmailNotifications = async (
     const emailPromises = event.Records.map((record) => {
       const item = JSON.parse(record.body);
 
-      const params: SES.SendEmailRequest = {
+      const params = {
         Destination: {
           ToAddresses: [item.email],
         },
@@ -28,7 +27,7 @@ export const sendEmailNotifications = async (
         Source: `${verifiedEmail}`,
       };
 
-      return ses.sendEmail(params).promise();
+      return sesClient.sendEmail(params);
     });
 
     await Promise.all(emailPromises);

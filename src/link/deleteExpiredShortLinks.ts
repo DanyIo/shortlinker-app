@@ -1,8 +1,7 @@
-import { APIGatewayProxyHandler, APIGatewayEvent } from "aws-lambda";
 import { DeleteScheduleCommand } from "@aws-sdk/client-scheduler";
 import { dynamoDb } from "../utils/dynamoDb";
 import { schedulerClient } from "../utils/eventBridgeClient";
-import { sqsClient } from "../utils/notifications";
+import { sqsClient } from "../utils/sqsClient";
 
 const queueUrl = process.env.THE_QUEUE_URL;
 
@@ -11,7 +10,7 @@ interface IDeleteExpiredShortLink {
   email: string;
 }
 
-export const deleteExpiredShortLinks: APIGatewayProxyHandler = async (
+export const deleteExpiredShortLinks = async (
   data: IDeleteExpiredShortLink
 ) => {
   try {
@@ -33,7 +32,7 @@ export const deleteExpiredShortLinks: APIGatewayProxyHandler = async (
     };
     try {
       await dynamoDb.delete(deleteParams);
-      await sqsClient.sendMessage(sqsParams).promise();
+      await sqsClient.sendMessage(sqsParams);
 
       await schedulerClient.send(
         new DeleteScheduleCommand({

@@ -7,7 +7,6 @@ custom:
   esbuild:
     bundle: true
     minify: false
-    exclude: []
   scriptable:
     hooks:
       after:deploy:finalize: node verifyEmailIdentity.mjs
@@ -33,6 +32,7 @@ provider:
     DYNAMODB_LINKS_TABLE: ${self:service}-linksTable-${sls:stage}
     THE_QUEUE_URL: { Ref: TheQueue }
     JWT_SECRET: ${env:JWT_SECRET}
+    STAGE: ${sls:stage}
     VERIFIED_EMAIL: ${env:VERIFIED_EMAIL}
     REGION: ${aws:region}
     ACCOUNT_ID: ${aws:accountId}

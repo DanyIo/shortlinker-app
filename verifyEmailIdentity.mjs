@@ -10,7 +10,7 @@ const clientConfig = {
 
 const client = new SESClient(clientConfig);
 
-const email = process.env.VERIFIED_EMAIL ?? "no@gmail.com";
+const email = process.env.VERIFIED_EMAIL ?? "";
 
 const verifyEmailIdentity = async () => {
   try {
