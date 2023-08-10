@@ -37,7 +37,7 @@ export const login: APIGatewayProxyHandler = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "Login successful", token: jwtToken }),
+      body: JSON.stringify({ token: jwtToken }),
     };
   } catch (error) {
     console.error("Error during login:", error);
